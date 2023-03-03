@@ -75,14 +75,7 @@ public class EnterpriseArchitectRepository {
     public void createAlias(Long id, String alias) {
         int result;
         try {
-            PreparedStatement statement = getDbConnection()
-                    .prepareStatement("update dbo.t_object set Alias = ? where Object_ID = ?");
-
-            statement.setString(1, alias);
-            statement.setLong(2, id);
-            result = statement.executeUpdate();
-
-            statement.close();
+            result = updateDataByIdAction(id, alias);
         } catch (SQLException e) {
             throw new NotFoundException("Error:\n " + e.getMessage());
         }
@@ -90,5 +83,31 @@ public class EnterpriseArchitectRepository {
         if (result == 0) {
             throw new NotFoundException("Error update alias");
         }
+    }
+
+    public void deleteAlias(Long id) {
+        int result;
+        try {
+            result = updateDataByIdAction(id, null);
+        } catch (SQLException e) {
+            throw new NotFoundException("Error:\n " + e.getMessage());
+        }
+
+        if (result == 0) {
+            throw new NotFoundException("Error update alias");
+        }
+    }
+
+    private int updateDataByIdAction(Long id, String alias) throws SQLException {
+        int result;
+        PreparedStatement statement = getDbConnection()
+                .prepareStatement("update dbo.t_object set Alias = ? where Object_ID = ?");
+
+        statement.setString(1, alias);
+        statement.setLong(2, id);
+        result = statement.executeUpdate();
+
+        statement.close();
+        return result;
     }
 }

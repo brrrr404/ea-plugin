@@ -23,15 +23,6 @@ public class AliasAction extends AnAction {
 
     }
 
-    @Override
-    public void update(@NotNull final AnActionEvent e) {
-
-        if (e.isInInjectedContext()) {
-            //force showing check marks instead of toggle icons in the context menu
-            System.out.println("SSDASDASDAS");
-        }
-    }
-
     private FileChooserDescriptor showFileDialog(AnActionEvent event) {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false,
                 true,

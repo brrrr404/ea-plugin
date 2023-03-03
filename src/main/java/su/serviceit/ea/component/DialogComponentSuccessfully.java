@@ -14,14 +14,17 @@ public class DialogComponentSuccessfully extends DialogWrapper {
 
     private final DialogComponentCommon dialogComponentCommon;
 
-    JPanel panel = new JPanel(new GridBagLayout());
+    private JPanel panel = new JPanel(new GridBagLayout());
+    private String text;
 
-    public DialogComponentSuccessfully() {
+    public DialogComponentSuccessfully(String text) {
         super(false);
         this.dialogComponentCommon = new DialogComponentCommon();
 
+        this.text = text;
+
         this.init();
-        this.setTitle("Confirm");
+        this.setTitle("Successfully");
     }
 
     @Override
@@ -33,7 +36,7 @@ public class DialogComponentSuccessfully extends DialogWrapper {
 
         panel.setPreferredSize(new Dimension(100, 100));
 
-        panel.add(createLabel("Successfully!!"),
+        panel.add(createLabel("Successfully!!\n " + text),
                 gb.nextLine().next().weightx(0.2));
 
         return panel;

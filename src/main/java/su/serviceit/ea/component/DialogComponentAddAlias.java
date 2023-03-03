@@ -7,16 +7,14 @@ import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.serviceit.ea.component.common.DialogComponentCommon;
-import su.serviceit.ea.exception.NotFoundException;
-import su.serviceit.ea.exception.component.DialogComponentException;
 import su.serviceit.ea.model.IdAliasDto;
 import su.serviceit.ea.repository.EnterpriseArchitectRepository;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
+
+import static java.awt.GridBagConstraints.NORTHEAST;
 
 public class DialogComponentAddAlias extends DialogWrapper {
 
@@ -24,31 +22,40 @@ public class DialogComponentAddAlias extends DialogWrapper {
     private final EnterpriseArchitectRepository enterpriseArchitectRepository;
     private final DialogComponentCommon dialogComponentCommon;
 
-    JPanel panel = new JPanel(new GridBagLayout());
-    JTextField guid = new JTextField();
-    JTextField newAlias = new JTextField();
-    JTextField alias = new JTextField();
-    JButton button = new JButton("get actual alias");
-    String guidStr;
-    IdAliasDto dto;
+    private final JPanel panel = new JPanel(new GridBagLayout());
+    private final JTextField guid = new JTextField();
+    private final JTextField newAlias = new JTextField();
+    private final JTextField alias = new JTextField();
+    private final JButton getButton = new JButton("Get actual alias");
+    private final JButton deleteAlias = new JButton("Delete alias");
+    private String guidStr;
+    private IdAliasDto dto;
 
     public DialogComponentAddAlias() {
-        super(true);
+        super(false);
         this.enterpriseArchitectRepository = new EnterpriseArchitectRepository();
         this.dialogComponentCommon = new DialogComponentCommon();
 
         this.init();
         this.setTitle("Create New Alias");
 
-        button.addActionListener(actionEvent -> {
+        getButton.addActionListener(actionEvent -> {
             guidStr = guid.getText();
             dto = enterpriseArchitectRepository.getAliasByGuid(guidStr);
 
-            if (Objects.isNull(dto)) {
-                return;
+            if (!Objects.isNull(dto)) {
+                alias.setText(getAliasStr(dto));
+                newAlias.setEditable(true);
             }
-            alias.setText(getAliasStr(dto));
-            newAlias.setEditable(true);
+        });
+
+        deleteAlias.addActionListener(actionEvent -> {
+            if (!Objects.isNull(dto)) {
+                enterpriseArchitectRepository.deleteAlias(dto.getId());
+                alias.setText("");
+                newAlias.setEditable(true);
+                new DialogComponentSuccessfully("Alias was deleted").showAndGet();
+            }
         });
     }
 
@@ -67,10 +74,11 @@ public class DialogComponentAddAlias extends DialogWrapper {
 
         panel.add(createLabel("guid"), gb.nextLine().next().weightx(0.2));
         panel.add(guid, gb.next().weightx(0.7));
-        panel.add(button, gb.next().weightx(0.1));
+        panel.add(getButton, gb.next().weightx(0.1));
 
         panel.add(createLabel("alias"), gb.nextLine().nextLine().nextLine().next().weightx(0.2));
         panel.add(alias, gb.next().weightx(0.8));
+        panel.add(deleteAlias, gb.next().weightx(0.1));
 
         panel.add(createLabel("new alias"), gb.nextLine().next().weightx(0.2));
         panel.add(newAlias, gb.next().weightx(0.8));
@@ -82,9 +90,9 @@ public class DialogComponentAddAlias extends DialogWrapper {
     protected void doOKAction() {
 
         if (validNewAlias()) {
-                enterpriseArchitectRepository.createAlias(dto.getId(), newAlias.getText());
-                alias.setText(getAliasStr(guidStr));
-                new DialogComponentSuccessfully().showAndGet();
+            enterpriseArchitectRepository.createAlias(dto.getId(), newAlias.getText());
+            alias.setText(getAliasStr(guidStr));
+            new DialogComponentSuccessfully("Alias was updated").showAndGet();
         }
     }
 
@@ -92,7 +100,7 @@ public class DialogComponentAddAlias extends DialogWrapper {
         return Objects.nonNull(newAlias.getText())
                && !newAlias.getText().isBlank()
                && (alias.getText().equals("N/A")
-               || new DialogComponentConfirm().showAndGet());
+                   || new DialogComponentConfirm().showAndGet());
     }
 
     @NotNull
