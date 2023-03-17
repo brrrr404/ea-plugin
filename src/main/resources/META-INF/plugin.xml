@@ -17,6 +17,7 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
@@ -32,7 +33,9 @@
     <actions>
         <group popup="true" text="EA">
             <add-to-group group-id="MainMenu" anchor="last"/>
-            <action id="EA.setAlias" text="set alias" class="su.serviceit.ea.AliasAction"/>
+            <action id="EA.setAlias" text="set alias" class="su.serviceit.ea.AliasAction">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
+            </action>
         </group>
     </actions>
 </idea-plugin>

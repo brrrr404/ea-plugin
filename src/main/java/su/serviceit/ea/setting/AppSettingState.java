@@ -16,6 +16,8 @@ public class AppSettingState implements PersistentStateComponent<AppSettingState
     public String ip;
     public String port;
     public String databaseName;
+    public String login;
+    public String password;
 
     @Override
     public @Nullable AppSettingState getState() {
@@ -31,6 +33,8 @@ public class AppSettingState implements PersistentStateComponent<AppSettingState
         this.ip = state.ip;
         this.port = state.port;
         this.databaseName = state.databaseName;
+        this.login = state.login;
+        this.password = state.password;
     }
 
 

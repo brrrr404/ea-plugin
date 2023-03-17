@@ -34,6 +34,8 @@ public class AppSettingConfigurable implements Configurable {
         boolean modified = !Objects.equals(mySettingsComponent.getIp(), settings.ip);
         modified |= !Objects.equals(mySettingsComponent.getPort(), settings.port);
         modified |= !Objects.equals(mySettingsComponent.getDatabaseName(), settings.databaseName);
+        modified |= !Objects.equals(mySettingsComponent.getLogin(), settings.login);
+        modified |= !Objects.equals(mySettingsComponent.getPassword(), settings.password);
         return modified;
     }
 
@@ -43,6 +45,8 @@ public class AppSettingConfigurable implements Configurable {
         settings.ip = mySettingsComponent.getIp();
         settings.port = mySettingsComponent.getPort();
         settings.databaseName = mySettingsComponent.getDatabaseName();
+        settings.login = mySettingsComponent.getLogin();
+        settings.password= mySettingsComponent.getPassword();
     }
 
     @Override
@@ -52,6 +56,8 @@ public class AppSettingConfigurable implements Configurable {
         mySettingsComponent.setIp(settings.ip);
         mySettingsComponent.setPort(settings.port);
         mySettingsComponent.setDatabaseName(settings.databaseName);
+        mySettingsComponent.setLogin(settings.login);
+        mySettingsComponent.setPassword(settings.password);
     }
 
     @Override

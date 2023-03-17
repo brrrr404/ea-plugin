@@ -1,26 +1,28 @@
 package su.serviceit.ea.component;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.uiDesigner.core.AbstractLayout;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.impl.source.PsiMethodImpl;
 import com.intellij.util.ui.GridBag;
-import com.intellij.util.ui.JBUI;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.serviceit.ea.component.common.DialogComponentCommon;
 import su.serviceit.ea.model.IdAliasDto;
 import su.serviceit.ea.repository.EnterpriseArchitectRepository;
+import su.serviceit.ea.service.AliasService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-import static java.awt.GridBagConstraints.NORTHEAST;
-
 public class DialogComponentAddAlias extends DialogWrapper {
 
 
-    private final EnterpriseArchitectRepository enterpriseArchitectRepository;
-    private final DialogComponentCommon dialogComponentCommon;
+    private final EnterpriseArchitectRepository enterpriseArchitectRepository = new EnterpriseArchitectRepository();
+    private final DialogComponentCommon dialogComponentCommon = new DialogComponentCommon();
+    private final AliasService aliasService = new AliasService();
 
     private final JPanel panel = new JPanel(new GridBagLayout());
     private final JTextField guid = new JTextField();
@@ -28,47 +30,54 @@ public class DialogComponentAddAlias extends DialogWrapper {
     private final JTextField alias = new JTextField();
     private final JButton getButton = new JButton("Get actual alias");
     private final JButton deleteAlias = new JButton("Delete alias");
-    private String guidStr;
     private IdAliasDto dto;
 
-    public DialogComponentAddAlias() {
-        super(false);
-        this.enterpriseArchitectRepository = new EnterpriseArchitectRepository();
-        this.dialogComponentCommon = new DialogComponentCommon();
+    public DialogComponentAddAlias(AnActionEvent event) {
+        super(true);
+        this.setModal(false);
+        this.setOKActionEnabled(false);
 
         this.init();
         this.setTitle("Create New Alias");
 
-        getButton.addActionListener(actionEvent -> {
-            guidStr = guid.getText();
-            dto = enterpriseArchitectRepository.getAliasByGuid(guidStr);
+        String urlMethod = getUrlMethod(event);
+        setNewAlias(urlMethod);
 
-            if (!Objects.isNull(dto)) {
-                alias.setText(getAliasStr(dto));
-                newAlias.setEditable(true);
-            }
+        getButton.addActionListener(actionEvent -> {
+            updateAliasData();
         });
 
         deleteAlias.addActionListener(actionEvent -> {
-            if (!Objects.isNull(dto)) {
-                enterpriseArchitectRepository.deleteAlias(dto.getId());
-                alias.setText("");
-                newAlias.setEditable(true);
-                new DialogComponentSuccessfully("Alias was deleted").showAndGet();
-            }
+            deleteAlias();
         });
     }
 
+    private void updateAliasData() {
+        dto = aliasService.getAlias(getGuid());
+
+        if (Objects.nonNull(dto)) {
+            setAlias(dto.getAlias());
+            newAlias.setEditable(true);
+            this.setOKActionEnabled(true);
+        }
+    }
+
+    private void deleteAlias() {
+        boolean success = aliasService.deleteAlias(dto);
+
+        if (success) {
+            setAlias("");
+            newAlias.setEditable(true);
+            new DialogComponentSuccessfully("Alias was deleted").showAndGet();
+        }
+    }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
         alias.setEditable(false);
         newAlias.setEditable(false);
 
-        GridBag gb = new GridBag()
-                .setDefaultInsets(JBUI.insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP))
-                .setDefaultWeightX(1.0)
-                .setDefaultFill(GridBagConstraints.HORIZONTAL);
+        GridBag gb = dialogComponentCommon.createGridBag();
 
         panel.setPreferredSize(new Dimension(600, 200));
 
@@ -88,43 +97,63 @@ public class DialogComponentAddAlias extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-
         if (validNewAlias()) {
-            enterpriseArchitectRepository.createAlias(dto.getId(), newAlias.getText());
-            alias.setText(getAliasStr(guidStr));
+            enterpriseArchitectRepository.createAlias(dto.getId(), getNewAlias());
+            setAlias(getNewAlias());
             new DialogComponentSuccessfully("Alias was updated").showAndGet();
         }
     }
 
     private boolean validNewAlias() {
-        return Objects.nonNull(newAlias.getText())
-               && !newAlias.getText().isBlank()
-               && (alias.getText().equals("N/A")
+        return Objects.nonNull(getNewAlias())
+               && !getNewAlias().isBlank()
+               && (getAlias().equals("N/A")
                    || new DialogComponentConfirm().showAndGet());
-    }
-
-    @NotNull
-    private static String getAliasStr(IdAliasDto dto) {
-        String aliasStr;
-        if (Objects.isNull(dto.getAlias()) || dto.getAlias().equals("")) {
-            aliasStr = "N/A";
-        } else {
-            aliasStr = dto.getAlias();
-        }
-        return aliasStr;
     }
 
     private JComponent createLabel(String text) {
         return dialogComponentCommon.createLabel(text);
     }
 
-    private String getAliasStr(String guidStr) {
+    private String getUrlMethod(AnActionEvent event) {
 
-        dto = enterpriseArchitectRepository.getAliasByGuid(guidStr);
+        PsiElement element = event.getData(PlatformDataKeys.PSI_ELEMENT);
 
-        if (Objects.isNull(dto.getAlias())) {
-            return "";
+        if (Objects.nonNull(element)) {
+            String methodName = ((PsiMethodImpl) element).getName();
+            String className = ((PsiMethodImpl) element).getContainingClass().getName();
+            String pathName = ((PsiJavaFile) element.getContainingFile()).getPackageName();
+
+
+            if (Objects.equals(((PsiMethodImpl) element).getNode().getElementType().getDebugName(), "METHOD")) {
+                return pathName + "." + className + "#" + methodName;
+            }
+            return pathName + "." + className;
         }
-        return dto.getAlias();
+        return "";
+    }
+
+    public String getGuid() {
+        return guid.getText();
+    }
+
+    public String getNewAlias() {
+        return newAlias.getText();
+    }
+
+    public String getAlias() {
+        return alias.getText();
+    }
+
+    public void setGuid(String newText) {
+        guid.setText(newText);
+    }
+
+    public void setAlias(String newText) {
+        alias.setText(newText);
+    }
+
+    public void setNewAlias(String newText) {
+        newAlias.setText(newText);
     }
 }

@@ -1,5 +1,7 @@
 package su.serviceit.ea.model;
 
+import java.util.Objects;
+
 public class IdAliasDto {
 
     private Long id;
@@ -11,7 +13,11 @@ public class IdAliasDto {
     }
 
     public String getAlias() {
-        return alias;
+        if (Objects.isNull(alias) || alias.equals("")) {
+            return "N/A";
+        } else {
+            return alias;
+        }
     }
 
     public void setId(Long id) {

@@ -14,6 +14,8 @@ public class EnterpriseArchitectRepository {
     private final String ip;
     private final String port;
     private final String databaseName;
+    private final String login;
+    private final String password;
 
     public EnterpriseArchitectRepository() {
         AppSettingState setting = AppSettingState.getInstance();
@@ -21,13 +23,15 @@ public class EnterpriseArchitectRepository {
         ip = setting.ip;
         port = setting.port;
         databaseName = setting.databaseName;
+        login = setting.login;
+        password = setting.password;
     }
 
     private Connection dbConn = null;
 
     private Connection getDbConnection() throws SQLException {
-        String connStr = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;encrypt=false;integratedSecurity=true;",
-                ip, port, databaseName);
+        String connStr = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;encrypt=false;user=%s;password=%s",
+                ip, port, databaseName, login, password);
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -85,7 +89,7 @@ public class EnterpriseArchitectRepository {
         }
     }
 
-    public void deleteAlias(Long id) {
+    public boolean deleteAlias(Long id) {
         int result;
         try {
             result = updateDataByIdAction(id, null);
@@ -94,8 +98,10 @@ public class EnterpriseArchitectRepository {
         }
 
         if (result == 0) {
-            throw new NotFoundException("Error update alias");
+            throw new NotFoundException("Error delete alias");
         }
+
+        return result > 0;
     }
 
     private int updateDataByIdAction(Long id, String alias) throws SQLException {

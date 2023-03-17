@@ -15,11 +15,8 @@ public class AliasAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        DialogComponentAddAlias dialogComponent = new DialogComponentAddAlias();
-
-        if (dialogComponent.showAndGet()) {
-
-        }
+        DialogComponentAddAlias dialogComponent = new DialogComponentAddAlias(e);
+        dialogComponent.show();
 
     }
 
@@ -37,18 +34,6 @@ public class AliasAction extends AnAction {
 
         return fileChooserDescriptor;
     }
-//
-//    private String getAliasByGuid(String guid) {
-//        String alias;
-//        try {
-//            alias = enterpriseArchitectRepository.getAliasByGuid(guid);
-//        } catch (SQLException ex) {
-//            throw new RuntimeException(ex);
-//        }
-//
-//        return Objects.isNull(alias) ? "" : alias;
-//    }
-
 
     @Override
     public boolean isDumbAware() {

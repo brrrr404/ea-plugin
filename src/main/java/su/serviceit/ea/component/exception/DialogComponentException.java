@@ -1,9 +1,7 @@
-package su.serviceit.ea.exception.component;
+package su.serviceit.ea.component.exception;
 
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.uiDesigner.core.AbstractLayout;
 import com.intellij.util.ui.GridBag;
-import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.Nullable;
 import su.serviceit.ea.component.common.DialogComponentCommon;
 
@@ -25,16 +23,12 @@ public class DialogComponentException extends DialogWrapper {
 
 
         this.init();
-        this.setTitle("Confirm");
-
+        this.setTitle("Error");
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        GridBag gb = new GridBag()
-                .setDefaultInsets(JBUI.insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP))
-                .setDefaultWeightX(1.0)
-                .setDefaultFill(GridBagConstraints.HORIZONTAL);
+        GridBag gb = dialogComponentCommon.createGridBag();
 
         panel.setPreferredSize(new Dimension(300, 100));
 
